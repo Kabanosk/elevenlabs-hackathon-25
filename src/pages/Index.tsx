@@ -16,7 +16,6 @@ const Index = () => {
   const [isTranscribing, setIsTranscribing] = useState(false);
   const [transcription, setTranscription] = useState<string>("");
   const [userText, setUserText] = useState<string>("");
-  const isInitialized = useState(false);
   const [isTimerRunning, setIsTimerRunning] = useState(false);
   const [time, setTime] = useState(0);
   const [showProblem, setShowProblem] = useState(false);
@@ -284,7 +283,7 @@ Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, ad
             </div>
           </div>
         </div>
-        <h1 className="text-2xl font-bold">Mock Interview</h1>
+        <h1 className="text-4xl font-bold">Mock Interview</h1>
         <div className="w-24 flex justify-end">
           <ThemeToggle />
         </div>
@@ -295,8 +294,8 @@ Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, ad
             <div className="h-full">
               <ScrollArea className="h-full" type="always">
                 <div className="p-6">
-                  <h2 className="text-xl font-semibold mb-4">Problem Statement</h2>
-                  <div className="text-base text-muted-foreground pr-4">
+                  <h2 className="text-3xl font-semibold mb-4">Problem Statement</h2>
+                  <div className="text-2xl text-muted-foreground pr-4">
                     {showProblem ? loremIpsum : (
                       <div className="flex flex-col items-center justify-center h-[30vh] text-center">
                         <p className="text-lg text-muted-foreground mb-4">
@@ -313,7 +312,7 @@ Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, ad
           <Card className="h-[44vh] overflow-hidden mb-4">
             <div className="p-6 h-full flex flex-col gap-4">
               <div className="flex justify-between items-center gap-4">
-                <h3 className="font-medium whitespace-nowrap">{showProgress ? "Progress" : "Transcription"}</h3>
+                <h3 className="text-3xl font-bold">{showProgress ? "Progress" : "Transcription"}</h3>
                 <div className="flex gap-2">
                   <Button
                     onClick={isRecording ? stopRecording : startRecording}
@@ -345,7 +344,7 @@ Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, ad
                           <Checkbox id="item1" defaultChecked disabled />
                           <label
                             htmlFor="item1"
-                            className="text-base font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                            className="text-2xl leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
                           >
                             Start interview.
                           </label>
@@ -354,7 +353,7 @@ Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, ad
                           <Checkbox id="item2" disabled />
                           <label
                             htmlFor="item2"
-                            className="text-base font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                            className="text-2xl leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
                           >
                             Problem Analysis and Breakdown
                           </label>
