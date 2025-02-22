@@ -1,12 +1,13 @@
-import { useState, useRef } from 'react';
 import { Button } from "../components/ui/button";
 import { Card } from "../components/ui/card";
 import { toast } from "../components/ui/use-toast";
-import { Speaker, Mic, FileText } from "lucide-react";
+import { Conversation } from "@11labs/client";
+import { useState, useRef, useEffect } from 'react';
+import { Play, Mic, Square, Repeat, Check } from "lucide-react";
 import { Textarea } from "../components/ui/textarea";
 import { ScrollArea } from "../components/ui/scroll-area";
 import { ThemeToggle } from "../components/ThemeToggle";
-import { Conversation } from "@11labs/client";
+import { Checkbox } from "../components/ui/checkbox";
 import React from 'react';
 
 const Index = () => {
@@ -15,12 +16,16 @@ const Index = () => {
   const [isTranscribing, setIsTranscribing] = useState(false);
   const [transcription, setTranscription] = useState<string>("");
   const [userText, setUserText] = useState<string>("");
+  const isInitialized = useState(false);
+  const [isTimerRunning, setIsTimerRunning] = useState(false);
+  const [time, setTime] = useState(0);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
   const audioBlob = useRef<Blob | null>(null);
+  const timerIntervalRef = useRef<number | null>(null);
+  const [showProgress, setShowProgress] = useState(true);
   const apiKey = import.meta.env.VITE_OPENAI_API_KEY;
   const agentKey = import.meta.env.VITE_AGENT_KEY;
-  const isInitialized = useState(false);
 
   const loremIpsum = `Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
 Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt.
@@ -30,7 +35,7 @@ Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, ad
 olorem ipsum quia dolor sit amet, consectetur, adipisci velit, sed quia non numquam eius modi tempora incidunt ut labore et dolore magnam aliquam quaerat voluptatem.Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
 Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt.
 Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit, sed quia non numquam eius modi tempora incidunt ut labore et dolore magnam aliquam quaerat voluptatem.`;
-
+  
   async function startConversationalAI() {
     try {
       // 1. Request microphone permission
@@ -63,6 +68,35 @@ Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, ad
   }
   startConversationalAI();
 
+  const handleSwap = () => {
+    setShowProgress(!showProgress);
+    toast({
+      title: "View switched",
+      description: `Switched to ${showProgress ? "transcription" : "progress"} view`,
+    });
+  };
+
+  const formatTime = (seconds: number): string => {
+    const minutes = Math.floor(seconds / 60);
+    const remainingSeconds = seconds % 60;
+    return `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
+  };
+
+  const handleStartTimer = () => {
+    setIsTimerRunning(true);
+    toast({
+      title: "Timer started",
+      description: "Your interview time is now being recorded",
+    });
+  };
+
+  const handleEndTimer = () => {
+    setIsTimerRunning(false);
+    toast({
+      title: "Timer stopped",
+      description: `Total time: ${formatTime(time)}`,
+    });
+  };
 
   const startRecording = async () => {
     try {
@@ -208,19 +242,43 @@ Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, ad
 
   return (
     <div className="h-screen overflow-hidden bg-background p-4 flex flex-col gap-4">
-      <div className="flex justify-between items-center">
-        <div className="w-10" /> {/* Spacer */}
-        <h1 className="text-2xl font-bold">Mock Interview</h1>
-        <ThemeToggle />
+      <div className="flex justify-between items-center -m-4 mb-0 p-2">
+        <div className="w-24 ml-2">
+          <div className="flex items-center gap-4">
+            <span className="font-mono text-lg">{formatTime(time)}</span>
+            <div className="flex gap-2">
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={handleStartTimer}
+                disabled={isTimerRunning}
+              >
+                <Play className="w-4 h-4" />
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={handleEndTimer}
+                disabled={!isTimerRunning}
+              >
+                <Square className="w-4 h-4" />
+              </Button>
+            </div>
+          </div>
+        </div>
+        <h1 className="text-5xl font-bold">Mock Interview</h1>
+        <div className="w-24 flex justify-end">
+          <ThemeToggle />
+        </div>
       </div>
-      <div className="flex gap-4 flex-1">
+      <div className="flex gap-4 flex-1 mb-4">
         <div className="w-1/2 flex flex-col gap-4 h-full">
-          <Card className="h-[50%] overflow-hidden">
+          <Card className="h-[40vh] overflow-hidden mt-2 mb-2">
             <div className="h-full">
               <ScrollArea className="h-full" type="always">
                 <div className="p-6">
-                  <h2 className="text-xl font-semibold mb-4">Problem Statement</h2>
-                  <div className="text-sm text-muted-foreground pr-4">
+                  <h2 className="text-3xl font-semibold mb-4">Problem Statement</h2>
+                  <div className="text-base text-muted-foreground pr-4">
                     {loremIpsum}
                   </div>
                 </div>
@@ -228,48 +286,61 @@ Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, ad
             </div>
           </Card>
 
-          <Card className="h-[50%] overflow-hidden">
+          <Card className="h-[48vh] overflow-hidden mb-2">
             <div className="p-6 h-full flex flex-col gap-4">
               <div className="flex justify-between items-center gap-4">
-                <h3 className="font-medium whitespace-nowrap">Transcription</h3>
-                <Button
-                  onClick={isRecording ? stopRecording : startRecording}
-                  variant={isRecording ? "destructive" : "default"}
-                  size="sm"
-                  className="flex-1"
-                >
-                  {isRecording ? (
-                    <>
-                      <Mic className="w-4 h-4 mr-2" />
-                      Stop
-                    </>
-                  ) : (
-                    <>
-                      <Mic className="w-4 h-4 mr-2" />
-                      Record
-                    </>
-                  )}
-                </Button>
-                <Button
-                  onClick={playAudio}
-                  disabled={!audioURL}
-                  variant="outline"
-                  size="sm"
-                >
-                  <Speaker className="w-4 h-4" />
-                </Button>
+                <h3 className="text-3xl font-semibold mb-4 whitespace-nowrap">{showProgress ? "Progress" : "Transcription"}</h3>
+                <div className="flex gap-2">
+                  <Button
+                    onClick={isRecording ? stopRecording : startRecording}
+                    variant={isRecording ? "destructive" : "outline"}
+                    size="icon"
+                    className="h-8 w-8"
+                  >
+                    <Mic className="w-4 h-4" />
+                  </Button>
+                  <Button
+                    onClick={handleSwap}
+                    variant="outline"
+                    size="icon"
+                    className="h-8 w-8"
+                  >
+                    <Repeat className="w-4 h-4" />
+                  </Button>
+                </div>
               </div>
 
               <ScrollArea className="flex-1">
                 <div className="space-y-4">
-                  {isTranscribing ? (
-                    <div className="text-muted-foreground text-sm">Transcribing...</div>
+                  {showProgress ? (
+                    <div className="space-y-4">
+                      <div className="flex items-center space-x-2">
+                        <Checkbox id="item1" defaultChecked disabled/>
+                        <label
+                          htmlFor="item1"
+                          className="text-base font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                        >
+                          Lorem Ipsum
+                        </label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <Checkbox id="item2" disabled/>
+                        <label
+                          htmlFor="item2"
+                          className="text-base font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                        >
+                          Lorem Ipsum
+                        </label>
+                      </div>
+                    </div>
+                  ) : isTranscribing ? (
+                    <div className="text-base text-muted-foreground">Transcribing...</div>
                   ) : transcription ? (
-                    <div className="text-sm bg-muted p-4 rounded-lg whitespace-pre-wrap">
+                    <div className="text-base bg-muted p-4 rounded-lg whitespace-pre-wrap">
                       {transcription}
                     </div>
                   ) : (
-                    <div className="text-muted-foreground text-sm">No transcription yet. Start recording to begin.</div>
+                    <div className="text-base text-muted-foreground">No transcription yet. Start recording to begin.</div>
                   )}
                 </div>
               </ScrollArea>
@@ -277,14 +348,16 @@ Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, ad
           </Card>
         </div>
 
-        <Card className="w-1/2 h-full overflow-hidden">
-          <div className="h-full p-6 flex flex-col gap-4">
-            <Textarea
-              className="flex-1 resize-none text-base p-4"
-              placeholder="Start typing or use voice input..."
-              value={userText}
-              onChange={(e) => setUserText(e.target.value)}
-            />
+        <Card className="w-1/2 h-[90vh] overflow-hidden mt-2 mb-4">
+          <div className="h-full p-2 flex flex-col gap-4">
+            <ScrollArea className="h-full" type="always">
+              <Textarea
+                className="min-h-[90vh] resize-none text-base"
+                placeholder="Start typing or use voice input..."
+                value={userText}
+                onChange={(e) => setUserText(e.target.value)}
+              />
+            </ScrollArea>
           </div>
         </Card>
       </div>
