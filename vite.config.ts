@@ -17,3 +17,11 @@ export default defineConfig({
     jsxInject: `import React from 'react'`, // Ensure React is auto-injected
   },
 });
+
+interface ImportMetaEnv {
+  readonly VITE_OPENAI_API_KEY: string;
+}
+
+interface ImportMeta {
+  readonly env: ImportMetaEnv;
+}
