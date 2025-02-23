@@ -12,6 +12,7 @@ import React from 'react';
 
 let isInitialized = false;
 let clientName = "James";
+let conversation = null;
 
 const Index = () => {
   const [isRecording, setIsRecording] = useState(false);
@@ -29,7 +30,6 @@ const Index = () => {
   const [showProgress, setShowProgress] = useState(true);
   const apiKey = import.meta.env.VITE_OPENAI_API_KEY;
   const agentKey = import.meta.env.VITE_AGENT_KEY;
-
 
   const loremIpsum = `Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
 Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt.
@@ -49,12 +49,17 @@ Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, ad
       // const signedUrl = await getSignedUrl();
 
       // 3. Start the conversation using your agent ID (or signedUrl)
-      const conversation = await Conversation.startSession({
+      conversation = await Conversation.startSession({
         agentId: agentKey, // or use { signedUrl } if needed
         onConnect: () => console.log('Connected to the agent!'),
         onDisconnect: () => console.log('Disconnected!'),
         onMessage: (message) => console.log('Agent message:', message),
         onError: (error) => console.error('Error:', error),
+        clientTools: {
+          checkCorrectnessOfResponseLevelOne: async ({message}) => {
+            console.log("Dupa: ", message);
+          }
+        },
       });
 
       // Now your agent is live and listening/responding.
@@ -69,10 +74,6 @@ Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, ad
     } catch (error) {
       console.error('Failed to start conversation:', error);
     }
-  }
-  if(!isInitialized) {
-    startConversationalAI();
-    isInitialized = true;
   }
 
   const handleSwap = () => {
@@ -106,6 +107,10 @@ Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, ad
   };
 
   const handleStartTimer = () => {
+    if(!isInitialized) {
+      startConversationalAI();
+      isInitialized = true;
+    }
     setIsTimerRunning(true);
     setShowProblem(true);
     toast({
@@ -120,6 +125,12 @@ Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, ad
       title: "Timer stopped",
       description: `Total time: ${formatTime(time)}`,
     });
+
+    console.log("Conversation: ", conversation);
+    if (conversation) {
+      conversation.endSession();
+      console.log('Conversation ended.');
+    }
   };
 
   const startRecording = async () => {
