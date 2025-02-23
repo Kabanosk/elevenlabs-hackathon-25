@@ -12,10 +12,17 @@ import { TimerControls } from "../components/timer/TimerControls";
 import { Checkbox } from "../components/ui/checkbox";
 import { OpenAI } from "openai";
 import React from 'react';
-import { VideoPreview } from "../components/video/VideoPreview";
+import { VideoPreview, RecordingPreview } from "../components/video/VideoPreview";
 import { ProgressList } from "../components/progress/ProgressList";
 import { TranscriptionView } from "../components/transcription/TranscriptionView";
 import { ProblemStatement } from "../components/problem/ProblemStatement";
+import { 
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "../components/ui/select"
 import { BlurredContainer } from "../components/layout/BlurredContainer";
 import { start } from "repl";
 
@@ -422,11 +429,7 @@ return (
       <div className="w-1/2 flex flex-col gap-4 mt-3">
         <div className="flex gap-4 h-[25vh]">
           <VideoPreview showProblem={showProblem} videoRef={videoRef} />
-          <Card className="w-1/2 overflow-hidden">
-            <div className="h-full flex items-center justify-center bg-muted">
-              <Camera className="w-8 h-8 text-muted-foreground" />
-            </div>
-          </Card>
+          <RecordingPreview showProblem={showProblem}/>
         </div>
         <Card className="h-[63vh] overflow-hidden">
           <ScrollArea className="h - full" type="always">

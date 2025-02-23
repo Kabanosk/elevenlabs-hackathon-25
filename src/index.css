@@ -24,12 +24,60 @@
     --input: 0 0% 12%;  /* #1F1F1F */
     --ring: 196 100% 45%;  /* #00A8E8 */
     --radius: 0.5rem;
-    --textarea-bg: 0 0% 7%;  /* #121212 */
+    --textarea-bg: 0 0% 20%;  /* #121212 */
+    
+    /* Problem Statement specific variables */
+    --problem-bg: 0 0% 7%;  /* #121212 */
+    --problem-text: 0 0% 88%;  /* #E0E0E0 */
+    --problem-code-bg: 0 0% 20%;  /* #333333 */
+    --problem-heading: 0 0% 88%;  /* #E0E0E0 */
+    
+    /* Progress specific variables */
+    --progress-bg: 0 0% 7%;  /* #121212 */
+    --progress-text: 0 0% 88%;  /* #E0E0E0 */
+    --progress-border: 0 0% 20%;  /* #333333 */
   }
 }
 
 @layer base {
   body {
     @apply bg-[hsl(var(--background))] text-[hsl(var(--foreground))];
+  }
+}
+
+@layer components {
+  .problem-statement {
+    @apply bg-[hsl(var(--problem-bg))] text-[hsl(var(--problem-text))] rounded-lg p-6;
+  }
+
+  .problem-statement h2 {
+    @apply text-[hsl(var(--problem-heading))] text-xl font-semibold mb-4;
+  }
+
+  .problem-statement code {
+    @apply w-full h-screen;
+    @apply bg-[hsl(var(--problem-code-bg))] px-2 py-1 rounded;
+  }
+
+  .problem-statement pre {
+    @apply bg-[hsl(var(--problem-code-bg))] p-4 rounded-lg my-4;
+  }
+
+  .progress-list {
+    @apply bg-[hsl(var(--progress-bg))] rounded-lg p-4;
+  }
+
+  .progress-list-item {
+    @apply flex items-center space-x-3 text-[hsl(var(--progress-text))];
+  }
+
+  .progress-checkbox {
+    @apply border-[hsl(var(--progress-check))] 
+    data-[state=checked]:bg-[hsl(var(--progress-check))] 
+    data-[state=checked]:text-[hsl(var(--primary-foreground))];
+  }
+
+  .progress-label {
+    @apply text-[hsl(var(--progress-text))] font-medium;
   }
 }
