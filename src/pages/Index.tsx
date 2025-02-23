@@ -9,6 +9,8 @@ import { ScrollArea } from "../components/ui/scroll-area";
 import { ThemeToggle } from "../components/ThemeToggle";
 import { useNavigate } from 'react-router-dom';
 import { TimerControls } from "../components/timer/TimerControls";
+import { Checkbox } from "../components/ui/checkbox";
+import { OpenAI } from "openai";
 import React from 'react';
 import { VideoPreview } from "../components/video/VideoPreview";
 import { ProgressList } from "../components/progress/ProgressList";
@@ -67,7 +69,17 @@ const Index = () => {
         clientTools: {
           checkCorrectnessOfResponseLevelOne: async ({message}) => {
             console.log("Dupa: ", message);
-          }
+            const requirements = [
+                "Must include 'hello'",
+                "Must mention a city name",
+                "Must be at least 10 words long"
+            ];
+            checkRequirements(message, requirements).then(result => { 
+              console.log("res:", result); // { status: "Pass" } OR { status: "Fail", missing: [...], explanation: "..." }
+              console.log("User did not follow criterias. You can try to help him using something from this result: " + result);
+              return {userName: clientName, message: "User did not follow criterias. You can try to help him using something from this result: " + result};
+            });  
+          },
         },
       });
 
@@ -78,7 +90,7 @@ const Index = () => {
       setTimeout(async () => {
         await conversation.endSession();
         console.log('Conversation ended.');
-      }, 60000);
+      }, 600000);
       
     } catch (error) {
       console.error('Failed to start conversation:', error);
@@ -175,11 +187,89 @@ const Index = () => {
     });
   };
 
-  const loremIpsum = `Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+  const loremIpsum = `Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.`
+  async function checkRequirements(userInput, requirements) {
+    
 
-Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt.
+    const prompt = `
+    You are a strict evaluator checking if user input meets all requirements.
+    
+    Requirements:
+    ${requirements.map((req, i) => `${i + 1}. ${req}`).join("\n")}
+    
+    User Input:
+    "${userInput}"
 
-Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit, sed quia non numquam eius modi tempora incidunt ut labore et dolore magnam aliquam quaerat voluptatem.`;
+    TASK:
+    - Check if the input meets **all** requirements.
+    - If anything is missing, clearly list **which requirements are not met**.
+    - If all are met, return **"Pass"**.
+    - If not, return **"Fail"** and explain what's missing.
+
+    Return JSON format: 
+    {"status": "Pass" or "Fail", "missing": ["..."], "explanation": "..."}
+    Remember to use escape characters for quotes and newlines.
+    `
+
+    const payload = {
+      model: "gpt-3.5-turbo",
+      messages: [
+        { role: "developer", content: prompt }
+      ]
+    };
+    
+    let responseToReturn = "Can you repeat?";
+    
+    try {
+      const response = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${apiKey}`,
+        },
+        body: JSON.stringify(payload),
+      });
+
+      const data = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(data.error?.message || 'Transcription failed');
+      }
+      console.log("response: ", data);
+      const dataJSON = JSON.parse(data.choices[0].message.content);
+  
+      if(dataJSON.status == "Fail") {
+        responseToReturn = dataJSON.explanation;
+      } else {
+        responseToReturn = "You pass this section!";
+      }
+      console.log("Response text: ", dataJSON);
+
+    } catch (error) {
+      console.error('Transcription error:', error);
+      toast({
+        title: "Error",
+        description: error.message || "Could not transcribe audio",
+        variant: "destructive",
+      });
+    }
+
+    return responseToReturn;
+    // return data.choices[0].message.content.status;
+  };
+
+  const requirements = [
+      "Must include 'hello'",
+      "Must mention a city name",
+      "Must be at least 10 words long"
+  ];
+
+  const userInput = "Hello from New York! I love this place.";
+
+  // checkRequirements(userInput, requirements).then(result => {
+  //   console.log(result); // { status: "Pass" } OR { status: "Fail", missing: [...], explanation: "..." }
+  // });
+
 
 const fibonacciProblem = `
 ## **Fibonacci Sequence**
