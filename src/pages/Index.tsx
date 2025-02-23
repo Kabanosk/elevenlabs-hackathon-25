@@ -22,6 +22,10 @@ interface ListItem {
   checked: boolean;
 }
 
+let isInitialized = false;
+let clientName = "James";
+let conversation = null;
+
 const Index = () => {
   const navigate = useNavigate();
   const [isRecording, setIsRecording] = useState(false);
@@ -43,13 +47,54 @@ const Index = () => {
   ]);
   const [stream, setStream] = useState<MediaStream | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
-  const apiKey = import.meta.env.VITE_OPENAI_API_KEY;
   const agentKey = import.meta.env.VITE_AGENT_KEY;
+
+  async function startConversationalAI() {
+    try {
+      // 1. Request microphone permission
+      await navigator.mediaDevices.getUserMedia({ audio: true });
+
+      // 2. (Optional) If using a signed URL for a private agent
+      // const signedUrl = await getSignedUrl();
+
+      // 3. Start the conversation using your agent ID (or signedUrl)
+      conversation = await Conversation.startSession({
+        agentId: agentKey, // or use { signedUrl } if needed
+        onConnect: () => console.log('Connected to the agent!'),
+        onDisconnect: () => console.log('Disconnected!'),
+        onMessage: (message) => console.log('Agent message:', message),
+        onError: (error) => console.error('Error:', error),
+        clientTools: {
+          checkCorrectnessOfResponseLevelOne: async ({message}) => {
+            console.log("Dupa: ", message);
+          }
+        },
+      });
+
+      // Now your agent is live and listening/responding.
+      // You can interact with the conversation object as needed.
+
+      // For demonstration, end the session after 60 seconds:
+      setTimeout(async () => {
+        await conversation.endSession();
+        console.log('Conversation ended.');
+      }, 60000);
+      
+    } catch (error) {
+      console.error('Failed to start conversation:', error);
+    }
+  }
 
   useEffect(() => {
     if (isTimerRunning) {
       timerIntervalRef.current = window.setInterval(() => {
-        setTime(prevTime => prevTime + 1);
+        setTime(prevTime => {
+          const newTime = prevTime + 1;
+          if (newTime >= 1800) { // Time in s == 30min
+            handleEndTimer();
+          }
+          return newTime;
+        });
       }, 1000);
     } else if (timerIntervalRef.current) {
       window.clearInterval(timerIntervalRef.current);
@@ -96,103 +141,6 @@ const Index = () => {
       description: `Total time: ${time}`,
     });
     navigate('/finished');
-  };
-
-  const startRecording = async () => {
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      const mediaRecorder = new MediaRecorder(stream);
-      mediaRecorderRef.current = mediaRecorder;
-      chunksRef.current = [];
-
-      mediaRecorder.ondataavailable = (e) => {
-        if (e.data.size > 0) {
-          chunksRef.current.push(e.data);
-        }
-      };
-
-      mediaRecorder.onstop = async () => {
-        const blob = new Blob(chunksRef.current, { type: 'audio/webm' });
-        audioBlob.current = blob;
-        const url = URL.createObjectURL(blob);
-        setAudioURL(url);
-        toast({
-          title: "Recording complete",
-          description: "Starting transcription...",
-        });
-        await transcribeAudio();
-      };
-
-      mediaRecorder.start(100);
-      setIsRecording(true);
-      setTranscription("");
-      toast({
-        title: "Recording started",
-        description: "Speak into your microphone",
-      });
-    } catch (error) {
-      console.error('Error accessing microphone:', error);
-      toast({
-        title: "Error",
-        description: "Could not access microphone",
-        variant: "destructive",
-      });
-    }
-  };
-
-  const stopRecording = () => {
-    if (mediaRecorderRef.current && isRecording) {
-      mediaRecorderRef.current.stop();
-      mediaRecorderRef.current.stream.getTracks().forEach(track => track.stop());
-      setIsRecording(false);
-    }
-  };
-
-  const transcribeAudio = async () => {
-    if (!audioBlob.current) {
-      toast({
-        title: "No recording",
-        description: "Please record something first",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    setIsTranscribing(true);
-    const formData = new FormData();
-    formData.append('file', audioBlob.current, 'audio.webm');
-    formData.append('model', 'whisper-1');
-
-    try {
-      const response = await fetch('https://api.openai.com/v1/audio/transcriptions', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
-        },
-        body: formData,
-      });
-
-      const data = await response.json();
-      
-      if (!response.ok) {
-        throw new Error(data.error?.message || 'Transcription failed');
-      }
-
-      setTranscription(data.text);
-      toast({
-        title: "Transcription complete",
-        description: "Your transcription is ready",
-      });
-    } catch (error) {
-      console.error('Transcription error:', error);
-      toast({
-        title: "Error",
-        description: "Could not transcribe audio",
-        variant: "destructive",
-      });
-    } finally {
-      setIsTranscribing(false);
-    }
   };
 
   const handleSwap = () => {
@@ -269,14 +217,6 @@ Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, ad
                     disabled={!showProblem || !showProgress}
                   >
                     <Plus className="w-4 h-4" />
-                  </Button>
-                  <Button
-                    onClick={isRecording ? stopRecording : startRecording}
-                    variant={isRecording ? "destructive" : "outline"}
-                    size="icon"
-                    className="h-8 w-8"
-                    disabled={!showProblem}
-                  >
                   </Button>
                   <Button
                     onClick={handleSwap}
