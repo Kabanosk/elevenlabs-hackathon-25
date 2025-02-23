@@ -3,14 +3,27 @@ import { Card } from "../components/ui/card";
 import { toast } from "../components/ui/use-toast";
 import { Conversation } from "@11labs/client";
 import { useState, useRef, useEffect } from 'react';
-import { Play, Mic, Square, Repeat } from "lucide-react";
+import { Repeat, Camera, Plus } from "lucide-react";
 import { Textarea } from "../components/ui/textarea";
 import { ScrollArea } from "../components/ui/scroll-area";
 import { ThemeToggle } from "../components/ThemeToggle";
-import { Checkbox } from "../components/ui/checkbox";
+import { useNavigate } from 'react-router-dom';
+import { TimerControls } from "../components/timer/TimerControls";
 import React from 'react';
+import { VideoPreview } from "../components/video/VideoPreview";
+import { ProgressList } from "../components/progress/ProgressList";
+import { TranscriptionView } from "../components/transcription/TranscriptionView";
+import { ProblemStatement } from "../components/problem/ProblemStatement";
+import { BlurredContainer } from "../components/layout/BlurredContainer";
+
+interface ListItem {
+  id: number;
+  text: string;
+  checked: boolean;
+}
 
 const Index = () => {
+  const navigate = useNavigate();
   const [isRecording, setIsRecording] = useState(false);
   const [audioURL, setAudioURL] = useState<string | null>(null);
   const [isTranscribing, setIsTranscribing] = useState(false);
@@ -18,63 +31,20 @@ const Index = () => {
   const [userText, setUserText] = useState<string>("");
   const [isTimerRunning, setIsTimerRunning] = useState(false);
   const [time, setTime] = useState(0);
+  const [showProgress, setShowProgress] = useState(true);
   const [showProblem, setShowProblem] = useState(false);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
   const audioBlob = useRef<Blob | null>(null);
   const timerIntervalRef = useRef<number | null>(null);
-  const [showProgress, setShowProgress] = useState(true);
+  const [items, setItems] = useState<ListItem[]>([
+    { id: 1, text: 'Lorem Ipsum', checked: true },
+    { id: 2, text: 'Lorem Ipsum', checked: false },
+  ]);
+  const [stream, setStream] = useState<MediaStream | null>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
   const apiKey = import.meta.env.VITE_OPENAI_API_KEY;
   const agentKey = import.meta.env.VITE_AGENT_KEY;
-
-  const loremIpsum = `Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
-Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt.
-Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit, sed quia non numquam eius modi tempora incidunt ut labore et dolore magnam aliquam quaerat voluptatem.Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
-Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt.
-Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit, sed quia non numquam eius modi tempora incidunt ut labore et dolore magnam aliquam quaerat voluptatem.Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
-olorem ipsum quia dolor sit amet, consectetur, adipisci velit, sed quia non numquam eius modi tempora incidunt ut labore et dolore magnam aliquam quaerat voluptatem.Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
-Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt.
-Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit, sed quia non numquam eius modi tempora incidunt ut labore et dolore magnam aliquam quaerat voluptatem.`;
-  
-  async function startConversationalAI() {
-    try {
-      // 1. Request microphone permission
-      await navigator.mediaDevices.getUserMedia({ audio: true });
-
-      // 2. (Optional) If using a signed URL for a private agent
-      // const signedUrl = await getSignedUrl();
-
-      // 3. Start the conversation using your agent ID (or signedUrl)
-      const conversation = await Conversation.startSession({
-        agentId: agentKey, // or use { signedUrl } if needed
-        onConnect: () => console.log('Connected to the agent!'),
-        onDisconnect: () => console.log('Disconnected!'),
-        onMessage: (message) => console.log('Agent message:', message),
-        onError: (error) => console.error('Error:', error),
-      });
-
-      // Now your agent is live and listening/responding.
-      // You can interact with the conversation object as needed.
-
-      // For demonstration, end the session after 60 seconds:
-      setTimeout(async () => {
-        await conversation.endSession();
-        console.log('Conversation ended.');
-      }, 60000);
-      
-    } catch (error) {
-      console.error('Failed to start conversation:', error);
-    }
-  }
-  startConversationalAI();
-
-  const handleSwap = () => {
-    setShowProgress(!showProgress);
-    toast({
-      title: "View switched",
-      description: `Switched to ${showProgress ? "transcription" : "progress"} view`,
-    });
-  };
 
   useEffect(() => {
     if (isTimerRunning) {
@@ -92,83 +62,74 @@ Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, ad
     };
   }, [isTimerRunning]);
 
-  const formatTime = (seconds: number): string => {
-    const minutes = Math.floor(seconds / 60);
-    const remainingSeconds = seconds % 60;
-    return `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
-  };
-
-  const handleStartTimer = () => {
+  const handleStartTimer = async () => {
     setIsTimerRunning(true);
     setShowProblem(true);
-    toast({
-      title: "Timer started",
-      description: "Your interview time is now being recorded",
-    });
+    try {
+      const mediaStream = await navigator.mediaDevices.getUserMedia({ video: true });
+      setStream(mediaStream);
+      if (videoRef.current) {
+        videoRef.current.srcObject = mediaStream;
+      }
+      toast({
+        title: "Timer started",
+        description: "Your interview time is now being recorded",
+      });
+    } catch (error) {
+      console.error('Error accessing camera:', error);
+      toast({
+        title: "Camera Error",
+        description: "Could not access camera",
+        variant: "destructive",
+      });
+    }
   };
 
   const handleEndTimer = () => {
     setIsTimerRunning(false);
+    if (stream) {
+      stream.getTracks().forEach(track => track.stop());
+      setStream(null);
+    }
     toast({
       title: "Timer stopped",
-      description: `Total time: ${formatTime(time)}`,
+      description: `Total time: ${time}`,
     });
+    navigate('/finished');
   };
 
   const startRecording = async () => {
     try {
-
-      // const conversation = await Conversation.startSession({
-      //   agentId: agentKey,
-      //   onConnect: () => console.log('Connected to the agent!'),
-      //   onDisconnect: () => console.log('Disconnected from the agent!'),
-      //   onMessage: (message) => console.log('New message:', message),
-      //   onError: (error) => console.error('Error:', error),
-      // });
-
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       const mediaRecorder = new MediaRecorder(stream);
       mediaRecorderRef.current = mediaRecorder;
       chunksRef.current = [];
 
       mediaRecorder.ondataavailable = (e) => {
-        console.log("Data available:", e.data.size);
         if (e.data.size > 0) {
           chunksRef.current.push(e.data);
         }
       };
 
       mediaRecorder.onstop = async () => {
-        console.log("Recording stopped, chunks:", chunksRef.current.length);
         const blob = new Blob(chunksRef.current, { type: 'audio/webm' });
         audioBlob.current = blob;
         const url = URL.createObjectURL(blob);
-        console.log("Created URL:", url);
         setAudioURL(url);
         toast({
           title: "Recording complete",
           description: "Starting transcription...",
         });
-        // Automatically start transcription
         await transcribeAudio();
       };
 
-      console.log("Starting media recorder...");
-
       mediaRecorder.start(100);
       setIsRecording(true);
-      setTranscription(""); // Clear previous transcription
+      setTranscription("");
       toast({
         title: "Recording started",
         description: "Speak into your microphone",
       });
-      // setTimeout(async () => {
-      //   await conversation.endSession();
-      //   console.log('Conversation ended.');
-      // }, 15000);
-
-      // await conversation.endSession();
-      
     } catch (error) {
       console.error('Error accessing microphone:', error);
       toast({
@@ -184,27 +145,6 @@ Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, ad
       mediaRecorderRef.current.stop();
       mediaRecorderRef.current.stream.getTracks().forEach(track => track.stop());
       setIsRecording(false);
-    }
-  };
-
-  const playAudio = () => {
-    if (audioURL) {
-      console.log("Playing audio from URL:", audioURL);
-      const audio = new Audio(audioURL);
-      audio.play().catch(error => {
-        console.error('Error playing audio:', error);
-        toast({
-          title: "Error",
-          description: "Could not play audio",
-          variant: "destructive",
-        });
-      });
-    } else {
-      toast({
-        title: "No recording",
-        description: "Please record something first",
-        variant: "destructive",
-      });
     }
   };
 
@@ -227,7 +167,7 @@ Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, ad
       const response = await fetch('https://api.openai.com/v1/audio/transcriptions', {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${apiKey}`,
+          'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
         },
         body: formData,
       });
@@ -238,9 +178,7 @@ Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, ad
         throw new Error(data.error?.message || 'Transcription failed');
       }
 
-      // Set transcription text
       setTranscription(data.text);
-
       toast({
         title: "Transcription complete",
         description: "Your transcription is ready",
@@ -249,7 +187,7 @@ Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, ad
       console.error('Transcription error:', error);
       toast({
         title: "Error",
-        description: error.message || "Could not transcribe audio",
+        description: "Could not transcribe audio",
         variant: "destructive",
       });
     } finally {
@@ -257,63 +195,81 @@ Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, ad
     }
   };
 
+  const handleSwap = () => {
+    setShowProgress(!showProgress);
+    toast({
+      title: "View switched",
+      description: `Switched to ${showProgress ? "transcription" : "progress"} view`,
+    });
+  };
+
+  const handleAddItem = () => {
+    const lastItem = items[items.length - 1];
+    const newItem = {
+      id: lastItem ? lastItem.id + 1 : 1,
+      text: 'Lorem Ipsum',
+      checked: false
+    };
+    
+    if (lastItem) {
+      const updatedItems = items.map(item => 
+        item.id === lastItem.id ? { ...item, checked: true } : item
+      );
+      setItems([...updatedItems, newItem]);
+    } else {
+      setItems([newItem]);
+    }
+
+    toast({
+      title: "Item added",
+      description: "New item has been added to the list",
+    });
+  };
+
+  const loremIpsum = `Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+
+Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt.
+
+Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit, sed quia non numquam eius modi tempora incidunt ut labore et dolore magnam aliquam quaerat voluptatem.`;
+
   return (
     <div className="h-screen overflow-hidden bg-background p-4 flex flex-col gap-4">
       <div className="flex justify-between items-center -m-4 mb-0 p-2">
         <div className="w-24 ml-2">
-          <div className="flex items-center gap-4">
-            <span className="font-mono text-lg">{formatTime(time)}</span>
-            <div className="flex gap-2">
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={handleStartTimer}
-                disabled={isTimerRunning}
-              >
-                <Play className="w-4 h-4" />
-              </Button>
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={handleEndTimer}
-                disabled={!isTimerRunning}
-              >
-                <Square className="w-4 h-4" />
-              </Button>
-            </div>
-          </div>
+          <TimerControls
+            time={time}
+            isTimerRunning={isTimerRunning}
+            onStartTimer={handleStartTimer}
+            onEndTimer={handleEndTimer}
+          />
         </div>
-        <h1 className="text-4xl font-bold">Mock Interview</h1>
+        <h1 className="text-2xl font-bold">Mock Interview</h1>
         <div className="w-24 flex justify-end">
           <ThemeToggle />
         </div>
       </div>
       <div className="flex gap-4 flex-1 mb-4">
         <div className="w-1/2 flex flex-col gap-4 h-full">
-          <Card className="h-[44vh] overflow-hidden mt-2 mb-2">
-            <div className="h-full">
-              <ScrollArea className="h-full" type="always">
-                <div className="p-6">
-                  <h2 className="text-3xl font-semibold mb-4">Problem Statement</h2>
-                  <div className="text-2xl text-muted-foreground pr-4">
-                    {showProblem ? loremIpsum : (
-                      <div className="flex flex-col items-center justify-center h-[30vh] text-center">
-                        <p className="text-lg text-muted-foreground mb-4">
-                          Click the play button to start the interview and view the problem statement
-                        </p>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </ScrollArea>
-            </div>
-          </Card>
+          <ProblemStatement showProblem={showProblem} content={loremIpsum} />
 
-          <Card className="h-[44vh] overflow-hidden mb-4">
+          <BlurredContainer
+            showContent={showProblem}
+            className="flex-1"
+            blurMessage="Click the start button to track your progress or live trascription"
+          >
             <div className="p-6 h-full flex flex-col gap-4">
               <div className="flex justify-between items-center gap-4">
-                <h3 className="text-3xl font-bold">{showProgress ? "Progress" : "Transcription"}</h3>
+                <h3 className="font-medium whitespace-nowrap">{showProgress ? "Progress" : "Transcription"}</h3>
                 <div className="flex gap-2">
+                  <Button
+                    onClick={handleAddItem}
+                    variant="outline"
+                    size="icon"
+                    className="h-8 w-8"
+                    disabled={!showProblem || !showProgress}
+                  >
+                    <Plus className="w-4 h-4" />
+                  </Button>
                   <Button
                     onClick={isRecording ? stopRecording : startRecording}
                     variant={isRecording ? "destructive" : "outline"}
@@ -321,7 +277,6 @@ Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, ad
                     className="h-8 w-8"
                     disabled={!showProblem}
                   >
-                    <Mic className="w-4 h-4" />
                   </Button>
                   <Button
                     onClick={handleSwap}
@@ -339,38 +294,16 @@ Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, ad
                 {showProblem ? (
                   <div className="space-y-4">
                     {showProgress ? (
-                      <div className="space-y-4">
-                        <div className="flex items-center space-x-2">
-                          <Checkbox id="item1" defaultChecked disabled />
-                          <label
-                            htmlFor="item1"
-                            className="text-2xl leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                          >
-                            Start interview.
-                          </label>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          <Checkbox id="item2" disabled />
-                          <label
-                            htmlFor="item2"
-                            className="text-2xl leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                          >
-                            Problem Analysis and Breakdown
-                          </label>
-                        </div>
-                      </div>
-                    ) : isTranscribing ? (
-                      <div className="text-base text-muted-foreground">Transcribing...</div>
-                    ) : transcription ? (
-                      <div className="text-base bg-muted p-4 rounded-lg whitespace-pre-wrap">
-                        {transcription}
-                      </div>
+                      <ProgressList items={items} />
                     ) : (
-                      <div className="text-base text-muted-foreground">No transcription yet. Start recording to begin.</div>
+                      <TranscriptionView
+                        isTranscribing={isTranscribing}
+                        transcription={transcription}
+                      />
                     )}
                   </div>
                 ) : (
-                  <div className="flex flex-col items-center justify-center h-[30vh] text-center">
+                  <div className="flex flex-col items-center justify-center h-[30vh] full text-center">
                     <p className="text-lg text-muted-foreground mb-4">
                       Click the play button to start the interview and track your progress
                     </p>
@@ -378,22 +311,30 @@ Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, ad
                 )}
               </ScrollArea>
             </div>
-          </Card>
+          </BlurredContainer>
         </div>
 
-        <Card className="w-1/2 h-[90vh] overflow-hidden mt-2 mb-4">
-          <div className="h-full p-2 flex flex-col gap-4">
-            <ScrollArea className="h-full" type="always">
-              <Textarea
-                className="min-h-[90vh] resize-none text-base"
-                placeholder="Start typing or use voice input..."
-                value={userText}
-                onChange={(e) => setUserText(e.target.value)}
-                disabled={!showProblem}
-              />
-            </ScrollArea>
+        <div className="w-1/2 flex flex-col gap-4 mt-2">
+          <div className="flex gap-4 h-[20vh]">
+            <VideoPreview showProblem={showProblem} videoRef={videoRef} />
+            <Card className="w-1/2 overflow-hidden">
+              <div className="h-full flex items-center justify-center bg-muted">
+                <Camera className="w-8 h-8 text-muted-foreground" />
+              </div>
+            </Card>
           </div>
-        </Card>
+            <Card className="flex-1 overflow-hidden flex flex-col">
+              <ScrollArea className="flex-1" type="always">
+                <Textarea
+                  className="w-full min-h-[68vh] flex-grow resize-none text-lg"
+                  placeholder="Start typing or use voice input..."
+                  value={userText}
+                  onChange={(e) => setUserText(e.target.value)}
+                  disabled={!showProblem}
+                />
+              </ScrollArea>
+            </Card>
+        </div>
       </div>
     </div>
   );
