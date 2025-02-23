@@ -50,16 +50,8 @@ const Index = () => {
   const [stream, setStream] = useState<MediaStream | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const agentKey = import.meta.env.VITE_AGENT_KEY;
+  const apiKey = import.meta.env.VITE_OPENAI_API_KEY;
 
-  const loremIpsum = `Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
-Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt.
-Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit, sed quia non numquam eius modi tempora incidunt ut labore et dolore magnam aliquam quaerat voluptatem.Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
-Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt.
-Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit, sed quia non numquam eius modi tempora incidunt ut labore et dolore magnam aliquam quaerat voluptatem.Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
-olorem ipsum quia dolor sit amet, consectetur, adipisci velit, sed quia non numquam eius modi tempora incidunt ut labore et dolore magnam aliquam quaerat voluptatem.Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
-Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt.
-Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit, sed quia non numquam eius modi tempora incidunt ut labore et dolore magnam aliquam quaerat voluptatem.`;
-  
   async function startConversationalAI() {
     try {
       // 1. Request microphone permission
@@ -129,6 +121,8 @@ Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, ad
   }, [isTimerRunning]);
 
   const handleStartTimer = async () => {
+
+    startConversationalAI();
     setIsTimerRunning(true);
     setShowProblem(true);
     try {
@@ -187,29 +181,51 @@ Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, ad
       );
       setItems([...updatedItems, newItem]);
     } else {
-      toast({
-        title: "No recording",
-        description: "Please record something first",
-        variant: "destructive",
-      });
+      setItems([newItem]);
     }
+
+    toast({
+      title: "Item added",
+      description: "New item has been added to the list",
+    });
   };
 
-  const transcribeAudio = async () => {
-    if (!audioBlob.current) {
-      toast({
-        title: "No recording",
-        description: "Please record something first",
-        variant: "destructive",
-      });
-      return;
-    }
+  const loremIpsum = `Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+  Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt.
+  Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit, sed quia non numquam eius modi tempora incidunt ut labore et dolore magnam aliquam quaerat voluptatem.`;
 
-    setIsTranscribing(true);
-    const formData = new FormData();
-    formData.append('file', audioBlob.current, 'audio.webm');
-    formData.append('model', 'whisper-1');
+  async function checkRequirements(userInput, requirements) {
+    
 
+    const prompt = `
+    You are a strict evaluator checking if user input meets all requirements.
+    
+    Requirements:
+    ${requirements.map((req, i) => `${i + 1}. ${req}`).join("\n")}
+    
+    User Input:
+    "${userInput}"
+
+    TASK:
+    - Check if the input meets **all** requirements.
+    - If anything is missing, clearly list **which requirements are not met**.
+    - If all are met, return **"Pass"**.
+    - If not, return **"Fail"** and explain what's missing.
+
+    Return JSON format: 
+    {"status": "Pass" or "Fail", "missing": ["..."], "explanation": "..."}
+    Remember to use escape characters for quotes and newlines.
+    `
+
+    const payload = {
+      model: "gpt-3.5-turbo",
+      messages: [
+        { role: "developer", content: prompt }
+      ]
+    };
+    
+    let responseToReturn = "Can you repeat?";
+    
     try {
       const response = await fetch('https://api.openai.com/v1/chat/completions', {
         method: 'POST',
@@ -260,6 +276,29 @@ Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, ad
   //   console.log(result); // { status: "Pass" } OR { status: "Fail", missing: [...], explanation: "..." }
   // });
 
+
+  // const transcribeAudio = async () => {
+  //   if (!audioBlob.current) {
+  //     toast({
+  //       title: "No recording",
+  //       description: "Please record something first",
+  //       variant: "destructive",
+  //     });
+  //     return;
+  //   }
+
+  //   try {
+  //     const response = await fetch('https://api.openai.com/v1/chat/completions', {
+  //       method: 'POST',
+  //       headers: {
+  //         'Authorization': `Bearer ${apiKey}`,
+  //       },
+  //       body: formData,
+  //     });
+  //   } catch (error) {
+    
+  //   }
+  // }
 
 const fibonacciProblem = `
 ## **Fibonacci Sequence**
