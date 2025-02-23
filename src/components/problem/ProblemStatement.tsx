@@ -11,12 +11,12 @@ export function ProblemStatement({ showProblem, content }: ProblemStatementProps
   return (
     <BlurredContainer 
       showContent={showProblem} 
-      blurMessage="Click play to view the problem statement"
+      blurMessage="Click the start button to view the problem statement"
       className="h-[44vh] mt-2 mb-2"
     >
       <ScrollArea className="h-full" type="always">
         <div className="p-6">
-          <h2 className="text-xl font-semibold mb-4">Problem Statement</h2>
+          <h2 className="text-3xl font-bold mb-4">Problem Statement</h2>
           <div className="text-base text-muted-foreground pr-4">
             {content}
           </div>

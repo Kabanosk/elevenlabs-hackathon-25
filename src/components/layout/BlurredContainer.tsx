@@ -47,8 +47,8 @@ export function BlurredContainer({ showContent, children, blurMessage, className
   const paragraphs = generateIrregularText();
 
   return (
-    <Card className={`relative overflow-hidden ${className}`}>
-      <div className={`${!showContent ? 'opacity-0' : ''} relative z-30`}>
+    <Card className={`relative ${className}`}>
+      <div className={`${!showContent ? 'opacity-0' : ''} relative z-30 h-full`}>
         {children}
       </div>
       {!showContent && (

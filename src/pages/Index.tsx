@@ -180,104 +180,269 @@ Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium dolor
 
 Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit, sed quia non numquam eius modi tempora incidunt ut labore et dolore magnam aliquam quaerat voluptatem.`;
 
-  return (
-    <div className="h-screen overflow-hidden bg-background p-4 flex flex-col gap-4">
-      <div className="flex justify-between items-center -m-4 mb-0 p-2">
-        <div className="w-24 ml-2">
-          <TimerControls
-            time={time}
-            isTimerRunning={isTimerRunning}
-            onStartTimer={handleStartTimer}
-            onEndTimer={handleEndTimer}
-          />
-        </div>
-        <h1 className="text-2xl font-bold">Mock Interview</h1>
-        <div className="w-24 flex justify-end">
-          <ThemeToggle />
-        </div>
+const fibonacciProblem = `
+## **Fibonacci Sequence**
+
+The **Fibonacci numbers**, denoted as \\( F(n) \\), form a sequence known as the **Fibonacci sequence**, where each number is the sum of the two preceding ones. The sequence starts with:
+
+\`\`\`
+F(0) = 0,  F(1) = 1
+F(n) = F(n - 1) + F(n - 2), for n > 1
+\`\`\`
+
+Given an integer \\( n \\), calculate \\( F(n) \\).
+
+---
+
+### **Examples**
+
+#### **Example 1:**
+**Input:**  
+\`n = 2\`  
+**Output:**  
+\`1\`  
+**Explanation:**  
+\\( F(2) = F(1) + F(0) = 1 + 0 = 1 \\)
+
+---
+
+#### **Example 2:**
+**Input:**  
+\`n = 3\`  
+**Output:**  
+\`2\`  
+**Explanation:**  
+\\( F(3) = F(2) + F(1) = 1 + 1 = 2 \\)
+
+---
+
+#### **Example 3:**
+**Input:**  
+\`n = 4\`  
+**Output:**  
+\`3\`  
+**Explanation:**  
+\\( F(4) = F(3) + F(2) = 2 + 1 = 3 \\)
+
+#### **Example 3:**
+**Input:**  
+\`n = 4\`  
+**Output:**  
+\`3\`  
+**Explanation:**  
+\\( F(4) = F(3) + F(2) = 2 + 1 = 3 \\)
+
+
+#### **Example 3:**
+**Input:**  
+\`n = 4\`  
+**Output:**  
+\`3\`  
+**Explanation:**  
+\\( F(4) = F(3) + F(2) = 2 + 1 = 3 \\)
+
+
+#### **Example 3:**
+**Input:**  
+\`n = 4\`  
+**Output:**  
+\`3\`  
+**Explanation:**  
+\\( F(4) = F(3) + F(2) = 2 + 1 = 3 \\)
+
+
+#### **Example 3:**
+**Input:**  
+\`n = 4\`  
+**Output:**  
+\`3\`  
+**Explanation:**  
+\\( F(4) = F(3) + F(2) = 2 + 1 = 3 \\)
+
+
+#### **Example 3:**
+**Input:**  
+\`n = 4\`  
+**Output:**  
+\`3\`  
+**Explanation:**  
+\\( F(4) = F(3) + F(2) = 2 + 1 = 3 \\)
+
+
+#### **Example 3:**
+**Input:**  
+\`n = 4\`  
+**Output:**  
+\`3\`  
+**Explanation:**  
+\\( F(4) = F(3) + F(2) = 2 + 1 = 3 \\)
+
+#### **Example 3:**
+**Input:**  
+\`n = 4\`  
+**Output:**  
+\`3\`  
+**Explanation:**  
+\\( F(4) = F(3) + F(2) = 2 + 1 = 3 \\)
+
+
+#### **Example 3:**
+**Input:**  
+\`n = 4\`  
+**Output:**  
+\`3\`  
+**Explanation:**  
+\\( F(4) = F(3) + F(2) = 2 + 1 = 3 \\)
+
+
+#### **Example 3:**
+**Input:**  
+\`n = 4\`  
+**Output:**  
+\`3\`  
+**Explanation:**  
+\\( F(4) = F(3) + F(2) = 2 + 1 = 3 \\)
+
+
+#### **Example 3:**
+**Input:**  
+\`n = 4\`  
+**Output:**  
+\`3\`  
+**Explanation:**  
+\\( F(4) = F(3) + F(2) = 2 + 1 = 3 \\)
+
+
+#### **Example 3:**
+**Input:**  
+\`n = 4\`  
+**Output:**  
+\`3\`  
+**Explanation:**  
+\\( F(4) = F(3) + F(2) = 2 + 1 = 3 \\)#### **Example 3:**
+**Input:**  
+\`n = 4\`  
+**Output:**  
+\`3\`  
+**Explanation:**  
+\\( F(4) = F(3) + F(2) = 2 + 1 = 3 \\)
+
+#### **Example 3:**
+**Input:**  
+\`n = 4\`  
+**Output:**  
+\`3\`  
+**Explanation:**  
+\\( F(4) = F(3) + F(2) = 2 + 1 = 3 \\)
+
+#### **Example 3:**
+**Input:**  
+\`n = 4\`  
+**Output:**  
+\`3\`  
+**Explanation:**  
+\\( F(4) = F(3) + F(2) = 2 + 1 = 3 \\)
+`;
+
+
+
+return (
+  <div className="h-screen overflow-hidden bg-background p-4 flex flex-col gap-4">
+    <div className="flex justify-between items-center -m-4 mb-0 p-2">
+      <div className="w-24 ml-2">
+        <TimerControls
+          time={time}
+          isTimerRunning={isTimerRunning}
+          onStartTimer={handleStartTimer}
+          onEndTimer={handleEndTimer}
+        />
       </div>
-      <div className="flex gap-4 flex-1 mb-4">
-        <div className="w-1/2 flex flex-col gap-4 h-full">
-          <ProblemStatement showProblem={showProblem} content={loremIpsum} />
-
-          <BlurredContainer
-            showContent={showProblem}
-            className="flex-1"
-            blurMessage="Click the start button to track your progress or live trascription"
-          >
-            <div className="p-6 h-full flex flex-col gap-4">
-              <div className="flex justify-between items-center gap-4">
-                <h3 className="font-medium whitespace-nowrap">{showProgress ? "Progress" : "Transcription"}</h3>
-                <div className="flex gap-2">
-                  <Button
-                    onClick={handleAddItem}
-                    variant="outline"
-                    size="icon"
-                    className="h-8 w-8"
-                    disabled={!showProblem || !showProgress}
-                  >
-                    <Plus className="w-4 h-4" />
-                  </Button>
-                  <Button
-                    onClick={handleSwap}
-                    variant="outline"
-                    size="icon"
-                    className="h-8 w-8"
-                    disabled={!showProblem}
-                  >
-                    <Repeat className="w-4 h-4" />
-                  </Button>
-                </div>
-              </div>
-
-              <ScrollArea className="flex-1">
-                {showProblem ? (
-                  <div className="space-y-4">
-                    {showProgress ? (
-                      <ProgressList items={items} />
-                    ) : (
-                      <TranscriptionView
-                        isTranscribing={isTranscribing}
-                        transcription={transcription}
-                      />
-                    )}
-                  </div>
-                ) : (
-                  <div className="flex flex-col items-center justify-center h-[30vh] full text-center">
-                    <p className="text-lg text-muted-foreground mb-4">
-                      Click the play button to start the interview and track your progress
-                    </p>
-                  </div>
-                )}
-              </ScrollArea>
-            </div>
-          </BlurredContainer>
-        </div>
-
-        <div className="w-1/2 flex flex-col gap-4 mt-2">
-          <div className="flex gap-4 h-[20vh]">
-            <VideoPreview showProblem={showProblem} videoRef={videoRef} />
-            <Card className="w-1/2 overflow-hidden">
-              <div className="h-full flex items-center justify-center bg-muted">
-                <Camera className="w-8 h-8 text-muted-foreground" />
-              </div>
-            </Card>
-          </div>
-            <Card className="flex-1 overflow-hidden flex flex-col">
-              <ScrollArea className="flex-1" type="always">
-                <Textarea
-                  className="w-full min-h-[68vh] flex-grow resize-none text-lg"
-                  placeholder="Start typing or use voice input..."
-                  value={userText}
-                  onChange={(e) => setUserText(e.target.value)}
-                  disabled={!showProblem}
-                />
-              </ScrollArea>
-            </Card>
-        </div>
+      <h1 className="text-2xl font-bold">Mock Interview</h1>
+      <div className="w-24 flex justify-end">
+        <ThemeToggle />
       </div>
     </div>
-  );
-};
+    <div className="flex gap-4 flex-1 mb-4">
+      <div className="w-1/2 flex flex-col gap-4 h-full">
+        <ProblemStatement showProblem={showProblem} content={fibonacciProblem} />
 
+        <BlurredContainer
+          showContent={showProblem}
+          className="h-[44vh]"
+          blurMessage="Click the start button to track your progress or live trascription"
+        >
+          <div className="p-6 h-full flex flex-col gap-4">
+            <div className="flex justify-between items-center gap-4">
+              <h3 className="text-3xl font-bold whitespace-nowrap">{showProgress ? "Progress" : "Transcription"}</h3>
+              <div className="flex gap-2">
+                <Button
+                  onClick={handleAddItem}
+                  variant="outline"
+                  size="icon"
+                  className="h-8 w-8"
+                  disabled={!showProblem || !showProgress}
+                >
+                  <Plus className="w-4 h-4" />
+                </Button>
+                <Button
+                  onClick={handleSwap}
+                  variant="outline"
+                  size="icon"
+                  className="h-8 w-8"
+                  disabled={!showProblem}
+                >
+                  <Repeat className="w-4 h-4" />
+                </Button>
+              </div>
+            </div>
+
+            <ScrollArea className="h-[34vh]" type="always">
+              {showProblem ? (
+                <div className="space-y-4 pr-4">
+                  {showProgress ? (
+                    <ProgressList items={items} />
+                  ) : (
+                    <TranscriptionView
+                      isTranscribing={isTranscribing}
+                      transcription={transcription}
+                    />
+                  )}
+                </div>
+              ) : (
+                <div className="flex flex-col items-center justify-center h-[30vh] text-center">
+                  <p className="text-lg text-muted-foreground mb-4">
+                    Click the play button to start the interview and track your progress
+                  </p>
+                </div>
+              )}
+            </ScrollArea>
+          </div>
+        </BlurredContainer>
+      </div>
+
+      <div className="w-1/2 flex flex-col gap-4 mt-3">
+        <div className="flex gap-4 h-[25vh]">
+          <VideoPreview showProblem={showProblem} videoRef={videoRef} />
+          <Card className="w-1/2 overflow-hidden">
+            <div className="h-full flex items-center justify-center bg-muted">
+              <Camera className="w-8 h-8 text-muted-foreground" />
+            </div>
+          </Card>
+        </div>
+        <Card className="h-[63vh] overflow-hidden">
+          <ScrollArea className="h - full" type="always">
+            <Textarea
+              className="w-full h-[63vh] resize-none text-lg"
+              placeholder="Start typing or use voice input..."
+              value={userText}
+              onChange={(e) => setUserText(e.target.value)}
+              disabled={!showProblem}
+            />
+          </ScrollArea>
+        </Card>
+      </div>
+    </div>
+  </div>
+);
+};
 export default Index;
