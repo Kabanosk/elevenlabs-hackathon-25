@@ -59,7 +59,7 @@ const Index = () => {
   const timerIntervalRef = useRef<number | null>(null);
   const [items, setItems] = useState<ListItem[]>([
     { id: 1, text: 'Begin the interview.', checked: true },
-    { id: 2, text: 'Lorem Ipsum', checked: false },
+    { id: 2, text: 'Understanding the problem', checked: false },
   ]);
   const [stream, setStream] = useState<MediaStream | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -220,7 +220,7 @@ const Index = () => {
     });
   };  
 
-  const messages = ["Understanding the problem", "Writing brute-force approach", "Optimizing the solution", "Testing the solution", "Discussing complexity", "Discussing trade-offs"];
+  const messages = ["Writing brute-force approach", "Optimizing the solution", "Testing the solution", "Discussing complexity", "Discussing trade-offs"];
 
   const handleAddItem = () => {
     const lastItem = items[items.length - 1];
@@ -363,7 +363,7 @@ return (
           onEndTimer={handleEndTimer}
         />
       </div>
-      <h1 className="text-2xl font-bold">Mock Interview</h1>
+      <h1 className="text-5xl font-bold">Interviewly</h1>
       <div className="w-24 flex justify-end">
         <ThemeToggle />
       </div>
