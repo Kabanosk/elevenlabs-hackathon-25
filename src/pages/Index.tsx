@@ -24,7 +24,11 @@ interface ListItem {
   checked: boolean;
 }
 
-let isInitialized = false;
+interface Message {
+  message: string;
+  source: string;
+}
+
 let clientName = "James";
 let conversation = null;
 
@@ -33,7 +37,7 @@ const Index = () => {
   const [isRecording, setIsRecording] = useState(false);
   const [audioURL, setAudioURL] = useState<string | null>(null);
   const [isTranscribing, setIsTranscribing] = useState(false);
-  const [transcription, setTranscription] = useState<string>("");
+  const [transcription, setTranscription] = useState<Message[]>([]);
   const [userText, setUserText] = useState<string>("");
   const [isTimerRunning, setIsTimerRunning] = useState(false);
   const [time, setTime] = useState(0);
@@ -44,7 +48,7 @@ const Index = () => {
   const audioBlob = useRef<Blob | null>(null);
   const timerIntervalRef = useRef<number | null>(null);
   const [items, setItems] = useState<ListItem[]>([
-    { id: 1, text: 'Lorem Ipsum', checked: true },
+    { id: 1, text: 'Begin the interview.', checked: true },
     { id: 2, text: 'Lorem Ipsum', checked: false },
   ]);
   const [stream, setStream] = useState<MediaStream | null>(null);
@@ -65,7 +69,13 @@ const Index = () => {
         agentId: agentKey, // or use { signedUrl } if needed
         onConnect: () => console.log('Connected to the agent!'),
         onDisconnect: () => console.log('Disconnected!'),
-        onMessage: (message) => console.log('Agent message:', message),
+        onMessage: (message) => {
+          console.log('Agent message:', message)
+          setTranscription(prev => [...prev, { 
+            message: message.message, 
+            source: message.source 
+          }]);
+        },
         onError: (error) => console.error('Error:', error),
         clientTools: {
           checkCorrectnessOfResponseLevelOne: async ({message}) => {
@@ -75,13 +85,17 @@ const Index = () => {
                 "Must mention a city name",
                 "Must be at least 10 words long"
             ];
-            checkRequirements(message, requirements).then(result => { 
+            checkRequirements(message, requirements).then(result => {
               console.log("res:", result); // { status: "Pass" } OR { status: "Fail", missing: [...], explanation: "..." }
               console.log("User did not follow criterias. You can try to help him using something from this result: " + result);
               return {userName: clientName, message: "User did not follow criterias. You can try to help him using something from this result: " + result};
-            });  
+            });
           },
         },
+        dynamicVariables: {
+          user_name: 'David',
+          project_description: 'Fibbonaci problem',
+        }
       });
 
       // Now your agent is live and listening/responding.
@@ -136,6 +150,7 @@ const Index = () => {
         title: "Timer started",
         description: "Your interview time is now being recorded",
       });
+      await startConversationalAI();
     } catch (error) {
       console.error('Error accessing camera:', error);
       toast({

@@ -33,7 +33,7 @@ export function BlurredContainer({ showContent, children, blurMessage, className
       "Temporibus autem quibusdam et aut officiis debitis aut rerum necessitatibus saepe eveniet.\nNam libero tempore, cum soluta nobis est eligendi optio cumque nihil impedit quo minus id quod"
     ];
 
-    const numParagraphs = getRandomInt(4, 6);
+    const numParagraphs = getRandomInt(4, 4);
     const selectedTexts = new Set<string>();
 
     while (selectedTexts.size < numParagraphs) {
