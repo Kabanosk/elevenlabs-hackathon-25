@@ -156,7 +156,9 @@ const Index = () => {
       title: "Timer stopped",
       description: `Total time: ${time}`,
     });
+    conversation.endSession();
     navigate('/finished');
+
   };
 
   const handleSwap = () => {
