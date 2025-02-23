@@ -17,6 +17,7 @@ import { ProgressList } from "../components/progress/ProgressList";
 import { TranscriptionView } from "../components/transcription/TranscriptionView";
 import { ProblemStatement } from "../components/problem/ProblemStatement";
 import { BlurredContainer } from "../components/layout/BlurredContainer";
+import { start } from "repl";
 
 interface ListItem {
   id: number;
@@ -31,6 +32,8 @@ interface Message {
 
 let clientName = "James";
 let conversation = null;
+let messageID = 0;
+let isInitialized = false;
 
 const Index = () => {
   const navigate = useNavigate();
@@ -78,6 +81,9 @@ const Index = () => {
 
   async function startConversationalAI() {
     try {
+      if(isInitialized) {
+        return;
+      }
       // 1. Request microphone permission
       await navigator.mediaDevices.getUserMedia({ audio: true });
 
@@ -156,7 +162,6 @@ const Index = () => {
 
   const handleStartTimer = async () => {
 
-    startConversationalAI();
     setIsTimerRunning(true);
     setShowProblem(true);
     try {
@@ -170,7 +175,11 @@ const Index = () => {
         title: "Timer started",
         description: "Your interview time is now being recorded",
       });
-      await startConversationalAI();
+
+      if(!isInitialized) {
+        await startConversationalAI();
+        isInitialized = true;
+      }
     } catch (error) {
       console.error('Error accessing camera:', error);
       toast({
@@ -202,13 +211,15 @@ const Index = () => {
       title: "View switched",
       description: `Switched to ${showProgress ? "transcription" : "progress"} view`,
     });
-  };
+  };  
+
+  const messages = ["Understanding the problem", "Writing brute-force approach", "Optimizing the solution", "Testing the solution", "Discussing complexity", "Discussing trade-offs"];
 
   const handleAddItem = () => {
     const lastItem = items[items.length - 1];
     const newItem = {
       id: lastItem ? lastItem.id + 1 : 1,
-      text: 'Lorem Ipsum',
+      text: messages[messageID++],
       checked: false
     };
     
@@ -285,6 +296,7 @@ const Index = () => {
         responseToReturn = dataJSON.explanation;
       } else {
         responseToReturn = "You pass this section!";
+        handleAddItem();
       }
       console.log("Response text: ", dataJSON);
 
