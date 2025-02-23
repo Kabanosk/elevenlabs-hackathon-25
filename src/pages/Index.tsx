@@ -26,10 +26,6 @@ let isInitialized = false;
 let clientName = "James";
 let conversation = null;
 
-let isInitialized = false;
-let clientName = "James";
-let conversation = null;
-
 const Index = () => {
   const navigate = useNavigate();
   const [isRecording, setIsRecording] = useState(false);
@@ -88,14 +84,6 @@ const Index = () => {
       console.error('Failed to start conversation:', error);
     }
   }
-
-  const handleSwap = () => {
-    setShowProgress(!showProgress);
-    toast({
-      title: "View switched",
-      description: `Switched to ${showProgress ? "transcription" : "progress"} view`,
-    });
-  };
 
   useEffect(() => {
     if (isTimerRunning) {

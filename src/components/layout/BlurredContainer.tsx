@@ -33,7 +33,7 @@ export function BlurredContainer({ showContent, children, blurMessage, className
       "Temporibus autem quibusdam et aut officiis debitis aut rerum necessitatibus saepe eveniet.\nNam libero tempore, cum soluta nobis est eligendi optio cumque nihil impedit quo minus id quod"
     ];
 
-    const numParagraphs = getRandomInt(4, 8);
+    const numParagraphs = getRandomInt(4, 6);
     const selectedTexts = new Set<string>();
 
     while (selectedTexts.size < numParagraphs) {
@@ -65,7 +65,7 @@ export function BlurredContainer({ showContent, children, blurMessage, className
             ))}
           </div>
           <div className="absolute inset-0 backdrop-blur-[8px] bg-background/60 z-20 flex items-center justify-center flex-col gap-4">
-            <p className="text-lg text-muted-foreground">
+            <p className="text-3xl text-muted-foreground">
               {blurMessage || "Click play to start"}
             </p>
           </div>
