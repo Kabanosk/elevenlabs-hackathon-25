@@ -56,6 +56,26 @@ const Index = () => {
   const agentKey = import.meta.env.VITE_AGENT_KEY;
   const apiKey = import.meta.env.VITE_OPENAI_API_KEY;
 
+  const fibonacciProblem = `
+  ## **Fibonacci Sequence**
+
+  The **Fibonacci numbers**, denoted as F(n), form a sequence known as the **Fibonacci sequence**, where each number is the sum of the two preceding ones. The sequence starts with:
+
+  \`\`\`
+  F(0) = 0,  F(1) = 1
+  F(n) = F(n - 1) + F(n - 2), for n > 1
+  \`\`\`
+
+  Given an integer **n** , calculate F(n).
+
+  ---
+
+  #### **Example:**
+  **Input:**  
+  \`n = 2\`  
+  **Output:**  
+  \`1\`  `;
+
   async function startConversationalAI() {
     try {
       // 1. Request microphone permission
@@ -79,11 +99,11 @@ const Index = () => {
         onError: (error) => console.error('Error:', error),
         clientTools: {
           checkCorrectnessOfResponseLevelOne: async ({message}) => {
-            console.log("Dupa: ", message);
+            console.log("message: ", message);
             const requirements = [
-                "Must include 'hello'",
-                "Must mention a city name",
-                "Must be at least 10 words long"
+                "The solution is about Fibbonaci problem",
+                "Candidate asked at least one question about the size of 'n'",
+                "Candidate provided idea for solution (he will start coding later)"
             ];
             checkRequirements(message, requirements).then(result => {
               console.log("res:", result); // { status: "Pass" } OR { status: "Fail", missing: [...], explanation: "..." }
@@ -94,7 +114,7 @@ const Index = () => {
         },
         dynamicVariables: {
           user_name: 'David',
-          project_description: 'Fibbonaci problem',
+          project_description: fibonacciProblem + "You as a recruiter are responsible for checking if the user's solution meets the requirements. The requirements are: \n\n1. The solution must be correct\n2. User must provide idea for solution (he will start coding later)\n3.User asked at least one question about size of 'n'\n\nPlease evaluate the user's solution and provide feedback. If user asks about size of n say for this part it shouldn't be bigger than 100",
         }
       });
 
@@ -281,13 +301,6 @@ const Index = () => {
     // return data.choices[0].message.content.status;
   };
 
-  const requirements = [
-      "Must include 'hello'",
-      "Must mention a city name",
-      "Must be at least 10 words long"
-  ];
-
-  const userInput = "Hello from New York! I love this place.";
 
   // checkRequirements(userInput, requirements).then(result => {
   //   console.log(result); // { status: "Pass" } OR { status: "Fail", missing: [...], explanation: "..." }
@@ -317,25 +330,6 @@ const Index = () => {
   //   }
   // }
 
-const fibonacciProblem = `
-## **Fibonacci Sequence**
-
-The **Fibonacci numbers**, denoted as F(n), form a sequence known as the **Fibonacci sequence**, where each number is the sum of the two preceding ones. The sequence starts with:
-
-\`\`\`
-F(0) = 0,  F(1) = 1
-F(n) = F(n - 1) + F(n - 2), for n > 1
-\`\`\`
-
-Given an integer **n** , calculate F(n).
-
----
-
-#### **Example:**
-**Input:**  
-\`n = 2\`  
-**Output:**  
-\`1\`  `;
 
 
 
