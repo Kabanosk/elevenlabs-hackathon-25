@@ -26,6 +26,10 @@ let isInitialized = false;
 let clientName = "James";
 let conversation = null;
 
+let isInitialized = false;
+let clientName = "James";
+let conversation = null;
+
 const Index = () => {
   const navigate = useNavigate();
   const [isRecording, setIsRecording] = useState(false);
@@ -85,6 +89,14 @@ const Index = () => {
     }
   }
 
+  const handleSwap = () => {
+    setShowProgress(!showProgress);
+    toast({
+      title: "View switched",
+      description: `Switched to ${showProgress ? "transcription" : "progress"} view`,
+    });
+  };
+
   useEffect(() => {
     if (isTimerRunning) {
       timerIntervalRef.current = window.setInterval(() => {
@@ -116,6 +128,7 @@ const Index = () => {
       if (videoRef.current) {
         videoRef.current.srcObject = mediaStream;
       }
+
       toast({
         title: "Timer started",
         description: "Your interview time is now being recorded",
